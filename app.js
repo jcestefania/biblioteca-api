@@ -44,7 +44,7 @@ app.put("/biblioteca/:isbn", (req, res) => {
 
 // DELETE por ISBN: Eliminar un libro
 app.delete("/biblioteca/:isbn", (req, res) => {
-  const libroIndex = biblioteca.findIndex((i) => i.isbn === req.params.isbn);
+  const libroIndex = biblioteca.findIndex((i) => i.isbn.toString() === req.params.isbn.toString());
   if (libroIndex === -1)
     return res.status(404).send("El libro no fue encontrado.");
 
