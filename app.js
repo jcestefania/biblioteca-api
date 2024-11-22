@@ -8,7 +8,7 @@ app.use(express.json());
 
 // Conexión a MongoDB
 mongoose
-  .connect("mongodb://localhost:27017/biblioteca", { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect("mongodb://localhost:27017/biblioteca")
   .then(() => console.log("Conectado a MongoDB"))
   .catch((error) => console.error("Error al conectar a MongoDB:", error));
 
