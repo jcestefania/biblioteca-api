@@ -1,11 +1,27 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 
 const app = express();
 app.use(express.json());
 
-let biblioteca = [];
+// Conexión a MongoDB
+mongoose
+  .connect("mongodb://localhost:27017/biblioteca", { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("Conectado a MongoDB"))
+  .catch((error) => console.error("Error al conectar a MongoDB:", error));
+
+// Esquema y modelo de libro
+const libroSchema = new mongoose.Schema({
+  titulo: { type: String, required: true },
+  autor: { type: String, required: true },
+  isbn: { type: String, required: true, unique: true },
+  precio: { type: Number },
+  url: { type: String },
+});
+
+const Libro = mongoose.model("Libro", libroSchema);
 
 // Configuración de Swagger
 const swaggerOptions = {
@@ -82,16 +98,14 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
  *             schema:
  *               $ref: '#/components/schemas/Libro'
  */
-app.post("/biblioteca", (req, res) => {
-  const newLibro = {
-    titulo: req.body.titulo,
-    autor: req.body.autor,
-    isbn: req.body.isbn,
-    precio: req.body.precio,
-    url: req.body.url,
-  };
-  biblioteca.push(newLibro);
-  res.status(201).json(newLibro);
+app.post("/biblioteca", async (req, res) => {
+  try {
+    const newLibro = new Libro(req.body);
+    const savedLibro = await newLibro.save();
+    res.status(201).json(savedLibro);
+  } catch (error) {
+    res.status(400).json({ message: "Error al agregar el libro", error });
+  }
 });
 
 /**
@@ -110,8 +124,13 @@ app.post("/biblioteca", (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/Libro'
  */
-app.get("/biblioteca", (req, res) => {
-  res.json(biblioteca);
+app.get("/biblioteca", async (req, res) => {
+  try {
+    const libros = await Libro.find();
+    res.json(libros);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener los libros", error });
+  }
 });
 
 /**
@@ -137,10 +156,14 @@ app.get("/biblioteca", (req, res) => {
  *       404:
  *         description: El libro no fue encontrado
  */
-app.get("/biblioteca/:isbn", (req, res) => {
-  const libro = biblioteca.find((i) => i.isbn === req.params.isbn);
-  if (!libro) return res.status(404).send("No se ha encontrado el libro.");
-  res.json(libro);
+app.get("/biblioteca/:isbn", async (req, res) => {
+  try {
+    const libro = await Libro.findOne({ isbn: req.params.isbn });
+    if (!libro) return res.status(404).send("No se ha encontrado el libro.");
+    res.json(libro);
+  } catch (error) {
+    res.status(500).json({ message: "Error al buscar el libro", error });
+  }
 });
 
 /**
@@ -172,15 +195,14 @@ app.get("/biblioteca/:isbn", (req, res) => {
  *       404:
  *         description: El libro no fue encontrado
  */
-app.put("/biblioteca/:isbn", (req, res) => {
-  const libro = biblioteca.find((i) => i.isbn === req.params.isbn);
-  if (!libro) return res.status(404).send("No se ha encontrado el libro.");
-
-  libro.titulo = req.body.titulo;
-  libro.autor = req.body.autor;
-  libro.precio = req.body.precio;
-  libro.url = req.body.url;
-  res.json(libro);
+app.put("/biblioteca/:isbn", async (req, res) => {
+  try {
+    const updatedLibro = await Libro.findOneAndUpdate({ isbn: req.params.isbn }, req.body, { new: true });
+    if (!updatedLibro) return res.status(404).send("No se ha encontrado el libro.");
+    res.json(updatedLibro);
+  } catch (error) {
+    res.status(400).json({ message: "Error al actualizar el libro", error });
+  }
 });
 
 /**
@@ -206,13 +228,14 @@ app.put("/biblioteca/:isbn", (req, res) => {
  *       404:
  *         description: El libro no fue encontrado
  */
-app.delete("/biblioteca/:isbn", (req, res) => {
-  const libroIndex = biblioteca.findIndex((i) => i.isbn.toString() === req.params.isbn.toString());
-  if (libroIndex === -1)
-    return res.status(404).send("El libro no fue encontrado.");
-
-  const deletedLibro = biblioteca.splice(libroIndex, 1);
-  res.json(deletedLibro[0]);
+app.delete("/biblioteca/:isbn", async (req, res) => {
+  try {
+    const deletedLibro = await Libro.findOneAndDelete({ isbn: req.params.isbn });
+    if (!deletedLibro) return res.status(404).send("El libro no fue encontrado.");
+    res.json(deletedLibro);
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar el libro", error });
+  }
 });
 
 // Iniciar el servidor
