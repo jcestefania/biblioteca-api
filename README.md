@@ -22,21 +22,6 @@ La API permite las siguientes operaciones:
 - Los libros se almacenan inicialmente en un array llamado `biblioteca`.
 - El campo `ISBN` se usa como identificador único para las operaciones de búsqueda, actualización o eliminación.
 
-## Comprobaciones
-
-Antes de avanzar, asegúrate de que:
-
-1. El código funciona correctamente y todas las operaciones CRUD pueden realizarse utilizando **Postman**.
-2. Las rutas están bien definidas y devuelven las respuestas esperadas.
-
-## Tareas adicionales
-
-Después de implementar el CRUD básico, sigue los pasos adicionales:
-
-1. **Documentación con Swagger**: Añade documentación utilizando Swagger para probar y verificar las APIs directamente desde el navegador.
-2. **Pruebas sin Postman**: Usa Swagger como herramienta para interactuar con las APIs.
-3. **Migración a MongoDB**: Modifica el código para que los datos no se almacenen en un array en memoria, sino en una base de datos documental utilizando **MongoDB** con el **ODM Mongoose**.
-
 ## Herramientas necesarias
 
 - [Node.js](https://nodejs.org/)

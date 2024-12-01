@@ -2,13 +2,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+require('dotenv').config();
 
 const app = express();
 app.use(express.json());
 
 // Conexión a MongoDB
 mongoose
-  .connect("mongodb://localhost:27017/biblioteca")
+  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Conectado a MongoDB"))
   .catch((error) => console.error("Error al conectar a MongoDB:", error));
 
